@@ -1,0 +1,186 @@
+@import "@fontsource/prompt/300.css";
+@import "@fontsource/prompt/400.css";
+@import "@fontsource/prompt/500.css";
+@import "@fontsource/prompt/600.css";
+@import "@fontsource/prompt/700.css";
+@import "tailwindcss";
+
+:root {
+  --md-primary: #1565c0;
+  --md-primary-dark: #0d47a1;
+  --md-primary-light: #e3f2fd;
+  --md-on-primary: #fff;
+  --md-surface: #fff;
+  --md-bg: #fafafa;
+  --md-text: #212121;
+  --md-text2: #757575;
+  --md-outline: #e0e0e0;
+  --md-error: #d32f2f;
+  --md-success: #388e3c;
+  --md-warn: #ef6c00;
+}
+
+* {
+  font-family: 'Prompt', sans-serif;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--md-bg);
+  color: var(--md-text);
+  min-height: 100vh;
+}
+
+/* Spinner */
+.md-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--md-outline);
+  border-top-color: var(--md-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Thai Calendar Popup */
+.thai-cal-popup {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 1060;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1), 0 3px 6px rgba(0,0,0,0.08);
+  padding: 0.75rem;
+  width: 310px;
+  display: none;
+}
+.thai-cal-popup.show { display: block; }
+.thai-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.thai-cal-header button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--md-primary);
+  border-radius: 50%;
+  width: 32px; height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  padding: 0;
+}
+.thai-cal-header button:hover { background: var(--md-primary-light); }
+.thai-cal-title {
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.thai-cal-title:hover { background: var(--md-primary-light); }
+.thai-cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--md-text2);
+  margin-bottom: 0.25rem;
+}
+.thai-cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.thai-cal-day {
+  text-align: center;
+  padding: 0.35rem 0;
+  font-size: 0.88rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.15s;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.thai-cal-day:hover { background: var(--md-primary-light); }
+.thai-cal-day.today { border: 1.5px solid var(--md-primary); font-weight: 600; }
+.thai-cal-day.selected { background: var(--md-primary); color: #fff; font-weight: 600; }
+.thai-cal-day.other-month { color: #ccc; }
+.thai-cal-day.empty { cursor: default; }
+.thai-cal-day.empty:hover { background: none; }
+.thai-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.thai-cal-grid-item {
+  text-align: center;
+  padding: 0.5rem 0.3rem;
+  font-size: 0.88rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.thai-cal-grid-item:hover { background: var(--md-primary-light); }
+.thai-cal-grid-item.selected { background: var(--md-primary); color: #fff; font-weight: 600; }
+.thai-cal-today-btn {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.4rem;
+  background: none;
+  border: 1px solid var(--md-primary);
+  color: var(--md-primary);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Prompt', sans-serif;
+  transition: all 0.15s;
+}
+.thai-cal-today-btn:hover { background: var(--md-primary); color: #fff; }
+
+/* Purchase table inline inputs */
+.purchase-table input {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.3rem 0.4rem;
+  font-size: 0.92rem;
+  font-family: 'Prompt', sans-serif;
+  outline: none;
+  transition: border-color 0.15s;
+  background: transparent;
+}
+.purchase-table input:focus { border-color: var(--md-primary); background: #fff; }
+.purchase-table input[type="number"] { text-align: right; }
+
+/* Swal custom font */
+.swal2-popup { font-family: 'Prompt', sans-serif !important; }
+
+/* Photo gallery */
+.photo-thumb { position: relative; width: 80px; height: 80px; }
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--md-outline); }
+.remove-photo {
+  position: absolute; top: -6px; right: -6px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--md-error); color: #fff; border: 2px solid #fff;
+  font-size: 14px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; line-height: 1;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f5f5f5; }
+::-webkit-scrollbar-thumb { background: #bdbdbd; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9e9e9e; }
