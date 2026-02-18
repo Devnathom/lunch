@@ -6,10 +6,21 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
-$DB_HOST = getenv('DB_HOST') ?: 'localhost';
-$DB_NAME = getenv('DB_NAME') ?: 'lunch_report';
-$DB_USER = getenv('DB_USER') ?: 'root';
-$DB_PASS = getenv('DB_PASS') ?: '';
+// Load .env file if exists (for Hostinger production)
+$envFile = __DIR__ . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        list($key, $value) = array_pad(explode('=', $line, 2), 2, '');
+        $_ENV[trim($key)] = trim($value);
+    }
+}
+
+$DB_HOST = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: 'localhost';
+$DB_NAME = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: 'lunch_report';
+$DB_USER = $_ENV['DB_USER'] ?? getenv('DB_USER') ?: 'root';
+$DB_PASS = $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?: '';
 $UPLOAD_DIR = __DIR__ . '/uploads/';
 
 if (!is_dir($UPLOAD_DIR)) mkdir($UPLOAD_DIR, 0755, true);

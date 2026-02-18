@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { School, AccountBalance, Tune, Chat, Save, AddAPhoto } from 'lucide-react';
+import { School, Landmark, Settings2, MessageCircle, Save, ImagePlus } from 'lucide-react';
 import ThaiDatePicker from './ThaiDatePicker';
 import { saveSettings, uploadLogo, testLine, resetBudget } from '../utils/api';
 import { fmtNum } from '../utils/thaiDate';
@@ -128,7 +128,7 @@ export default function SettingsTab({ settings, onSettingsChange, stats }) {
               <img src={form.logoUrl} alt="logo" className="w-full h-full object-cover"
                 onError={e => { e.target.style.display='none'; }} />
             ) : (
-              <AddAPhoto size={32} className="text-gray-300" />
+              <ImagePlus size={32} className="text-gray-300" />
             )}
           </div>
           <div className="text-xs text-[var(--md-text2)] mt-1">คลิกเพื่ออัปโหลดโลโก้โรงเรียน</div>
@@ -156,7 +156,7 @@ export default function SettingsTab({ settings, onSettingsChange, stats }) {
       {/* Budget */}
       <div className={cardCls}>
         <div className={titleCls}>
-          <AccountBalance size={18} className="text-[var(--md-primary)]" /> งบประมาณอาหารกลางวัน
+          <Landmark size={18} className="text-[var(--md-primary)]" /> งบประมาณอาหารกลางวัน
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
           <div><label className={labelCls}>งบประมาณ/หัว (บาท)</label>

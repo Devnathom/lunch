@@ -16,6 +16,10 @@ dist-ssr
 api/uploads/*
 !api/uploads/.gitkeep
 
+# Environment
+api/.env
+.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
