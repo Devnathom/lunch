@@ -6,11 +6,18 @@
   RewriteRule ^api/ - [L]
 
   # Allow real files and directories
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
 
-  # Redirect all other requests to index.html (SPA)
-  RewriteRule . /index.html [L]
+  # /login → login.html
+  RewriteRule ^login/?$ /login.html [L]
+
+  # /app → app.html (React SPA)
+  RewriteRule ^app/?$ /app.html [L]
+
+  # Default: serve index.html (landing page)
+  RewriteRule ^ /index.html [L]
 </IfModule>
 
 # PHP settings
@@ -18,3 +25,9 @@
   php_value upload_max_filesize 10M
   php_value post_max_size 12M
 </IfModule>
+
+# Security: block .env files
+<FilesMatch "^\.env">
+  Order allow,deny
+  Deny from all
+</FilesMatch>

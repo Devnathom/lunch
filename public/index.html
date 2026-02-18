@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบรายงานอาหารกลางวัน</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{font-family:'Prompt',sans-serif}
+:root{--pri:#1565c0;--pri-dark:#0d47a1;--pri-light:#e3f2fd}
+.hero{background:linear-gradient(135deg,#0d47a1 0%,#1565c0 50%,#1976d2 100%);min-height:340px}
+.stat-card{border:none;border-radius:16px;transition:transform .2s,box-shadow .2s}
+.stat-card:hover{transform:translateY(-4px);box-shadow:0 8px 25px rgba(0,0,0,.12)!important}
+.school-card{border:none;border-radius:14px;cursor:pointer;transition:all .2s}
+.school-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.1)!important;border-color:var(--pri)!important}
+.school-logo{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #e0e0e0}
+.school-logo-placeholder{width:56px;height:56px;border-radius:50%;background:var(--pri-light);display:flex;align-items:center;justify-content:center;color:var(--pri);font-size:1.4rem}
+.filter-btn.active{background:var(--pri)!important;color:#fff!important;border-color:var(--pri)!important}
+.badge-report{font-size:.7rem;padding:4px 8px}
+.report-photo{width:100%;height:180px;object-fit:cover;border-radius:10px}
+.modal-report-photos img{width:100px;height:80px;object-fit:cover;border-radius:8px;cursor:pointer;transition:transform .15s}
+.modal-report-photos img:hover{transform:scale(1.08)}
+.nav-login-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:50px;padding:6px 20px;font-size:.88rem;transition:all .2s}
+.nav-login-btn:hover{background:#fff;color:var(--pri)}
+.search-box{max-width:400px}
+.scroll-top{position:fixed;bottom:20px;right:20px;z-index:1000;display:none}
+</style>
+</head>
+<body class="bg-light">
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark" style="background:var(--pri-dark)">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="/">
+      <i class="bi bi-egg-fried fs-4"></i> ระบบรายงานอาหารกลางวัน
+    </a>
+    <div class="d-flex align-items-center gap-2">
+      <a href="/login.html" class="nav-login-btn text-decoration-none">
+        <i class="bi bi-box-arrow-in-right"></i> เข้าสู่ระบบ
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero text-white py-5">
+  <div class="container text-center">
+    <h1 class="fw-bold mb-2"><i class="bi bi-clipboard2-data"></i> ระบบรายงานอาหารกลางวัน</h1>
+    <p class="lead opacity-75 mb-4">ติดตามการจัดการอาหารกลางวันของโรงเรียนทั่วประเทศ</p>
+    <div class="row justify-content-center g-3" id="statsRow">
+      <div class="col-6 col-md-2"><div class="bg-white bg-opacity-10 rounded-3 p-3"><div class="fs-3 fw-bold" id="statSchools">-</div><div class="small opacity-75">โรงเรียน</div></div></div>
+      <div class="col-6 col-md-2"><div class="bg-white bg-opacity-10 rounded-3 p-3"><div class="fs-3 fw-bold" id="statReports">-</div><div class="small opacity-75">รายงาน</div></div></div>
+      <div class="col-6 col-md-2"><div class="bg-white bg-opacity-10 rounded-3 p-3"><div class="fs-3 fw-bold" id="statStudents">-</div><div class="small opacity-75">นักเรียน</div></div></div>
+      <div class="col-6 col-md-2"><div class="bg-white bg-opacity-10 rounded-3 p-3"><div class="fs-3 fw-bold" id="statToday">-</div><div class="small opacity-75">รายงานวันนี้</div></div></div>
+      <div class="col-6 col-md-2"><div class="bg-white bg-opacity-10 rounded-3 p-3"><div class="fs-3 fw-bold" id="statProvinces">-</div><div class="small opacity-75">จังหวัด</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Filter + Search -->
+<section class="container mt-n3 position-relative" style="z-index:10">
+  <div class="card shadow-sm border-0 rounded-4 p-3 mb-4">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-3">
+        <select id="selProvince" class="form-select" onchange="onProvinceChange()">
+          <option value="">-- เลือกจังหวัด --</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select id="selDistrict" class="form-select" onchange="onDistrictChange()" disabled>
+          <option value="">-- เลือกอำเภอ --</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+          <input type="text" id="searchInput" class="form-control" placeholder="ค้นหาชื่อโรงเรียน..." oninput="debounceSearch()">
+        </div>
+      </div>
+      <div class="col-md-2 text-end">
+        <button class="btn btn-outline-secondary w-100" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise"></i> ล้าง</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Latest Reports -->
+<section class="container mb-4">
+  <h5 class="fw-bold mb-3"><i class="bi bi-clock-history text-primary"></i> รายงานล่าสุด</h5>
+  <div class="row g-3" id="latestReportsRow">
+    <div class="col-12 text-center py-4"><div class="spinner-border text-primary"></div></div>
+  </div>
+</section>
+
+<!-- Schools Grid -->
+<section class="container mb-5">
+  <h5 class="fw-bold mb-3"><i class="bi bi-buildings text-primary"></i> โรงเรียนในระบบ <small class="text-muted fw-normal" id="schoolCount"></small></h5>
+  <div class="row g-3" id="schoolsGrid">
+    <div class="col-12 text-center py-4"><div class="spinner-border text-primary"></div></div>
+  </div>
+</section>
+
+<!-- School Report Modal -->
+<div class="modal fade" id="schoolModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content border-0 rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <div class="d-flex align-items-center gap-3">
+          <div id="modalLogo"></div>
+          <div>
+            <h5 class="modal-title fw-bold mb-0" id="modalSchoolName"></h5>
+            <small class="text-muted" id="modalSchoolLocation"></small>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <div class="text-center py-4"><div class="spinner-border text-primary"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Report Detail Modal -->
+<div class="modal fade" id="reportDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 rounded-4">
+      <div class="modal-header border-0">
+        <h6 class="modal-title fw-bold" id="detailTitle"></h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="detailBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="py-4 mt-5" style="background:var(--pri-dark);color:#fff">
+  <div class="container text-center">
+    <p class="mb-1">&copy; <span id="footerYear"></span> ระบบรายงานอาหารกลางวัน</p>
+    <small class="opacity-50">พัฒนาโดย <strong>รัชเดช ศรีแก้ว</strong></small>
+  </div>
+</footer>
+
+<button class="btn btn-primary rounded-circle shadow scroll-top" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <i class="bi bi-arrow-up"></i>
+</button>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/public.php';
+const THAI_MONTHS_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+let searchTimeout;
+
+document.getElementById('footerYear').textContent = new Date().getFullYear() + 543;
+
+window.addEventListener('scroll', () => {
+  document.getElementById('scrollTopBtn').style.display = window.scrollY > 300 ? 'block' : 'none';
+});
+
+function thaiDate(d) {
+  if (!d) return '-';
+  const p = d.split('-');
+  return parseInt(p[2]) + ' ' + THAI_MONTHS_SHORT[parseInt(p[1])-1] + ' ' + (parseInt(p[0])+543);
+}
+
+async function fetchAPI(action, params = '') {
+  const res = await fetch(`${API}?action=${action}${params}`);
+  return res.json();
+}
+
+// Init
+(async () => {
+  loadStats();
+  loadProvinces();
+  loadLatestReports();
+  loadSchools();
+})();
+
+async function loadStats() {
+  try {
+    const s = await fetchAPI('dashboard_stats');
+    document.getElementById('statSchools').textContent = Number(s.totalSchools).toLocaleString();
+    document.getElementById('statReports').textContent = Number(s.totalReports).toLocaleString();
+    document.getElementById('statStudents').textContent = Number(s.totalStudents).toLocaleString();
+    document.getElementById('statToday').textContent = Number(s.todayReports).toLocaleString();
+    document.getElementById('statProvinces').textContent = Number(s.totalProvinces).toLocaleString();
+  } catch(e) { console.error(e); }
+}
+
+async function loadProvinces() {
+  try {
+    const provinces = await fetchAPI('provinces');
+    const sel = document.getElementById('selProvince');
+    provinces.forEach(p => {
+      sel.innerHTML += `<option value="${p.id}">${p.name} (${p.school_count})</option>`;
+    });
+  } catch(e) { console.error(e); }
+}
+
+async function onProvinceChange() {
+  const pid = document.getElementById('selProvince').value;
+  const selD = document.getElementById('selDistrict');
+  selD.innerHTML = '<option value="">-- เลือกอำเภอ --</option>';
+  selD.disabled = !pid;
+  if (pid) {
+    const districts = await fetchAPI('districts', `&province_id=${pid}`);
+    districts.forEach(d => {
+      selD.innerHTML += `<option value="${d.id}">${d.name} (${d.school_count})</option>`;
+    });
+  }
+  loadSchools();
+}
+
+function onDistrictChange() { loadSchools(); }
+
+function debounceSearch() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => loadSchools(), 300);
+}
+
+function resetFilters() {
+  document.getElementById('selProvince').value = '';
+  document.getElementById('selDistrict').innerHTML = '<option value="">-- เลือกอำเภอ --</option>';
+  document.getElementById('selDistrict').disabled = true;
+  document.getElementById('searchInput').value = '';
+  loadSchools();
+}
+
+async function loadSchools() {
+  const pid = document.getElementById('selProvince').value;
+  const did = document.getElementById('selDistrict').value;
+  const q = document.getElementById('searchInput').value.trim();
+  let params = '';
+  if (pid) params += `&province_id=${pid}`;
+  if (did) params += `&district_id=${did}`;
+  if (q) params += `&search=${encodeURIComponent(q)}`;
+
+  const grid = document.getElementById('schoolsGrid');
+  grid.innerHTML = '<div class="col-12 text-center py-4"><div class="spinner-border text-primary"></div></div>';
+
+  try {
+    const schools = await fetchAPI('schools', params);
+    document.getElementById('schoolCount').textContent = `(${schools.length} โรงเรียน)`;
+    if (schools.length === 0) {
+      grid.innerHTML = '<div class="col-12 text-center py-5"><div class="fs-1 mb-2">🏫</div><p class="text-muted">ยังไม่มีโรงเรียนในระบบ</p></div>';
+      return;
+    }
+    grid.innerHTML = schools.map(s => `
+      <div class="col-md-6 col-lg-4">
+        <div class="card school-card shadow-sm h-100" onclick="openSchool(${s.id},'${esc(s.name)}','${esc(s.province_name)} / ${esc(s.district_name)}','${esc(s.logo_url)}')">
+          <div class="card-body d-flex gap-3">
+            ${s.logo_url ? `<img src="${s.logo_url}" class="school-logo" onerror="this.outerHTML='<div class=school-logo-placeholder><i class=bi bi-building></i></div>'">` : '<div class="school-logo-placeholder"><i class="bi bi-building"></i></div>'}
+            <div class="flex-grow-1 min-w-0">
+              <h6 class="fw-semibold mb-1 text-truncate">${s.name}</h6>
+              <small class="text-muted"><i class="bi bi-geo-alt"></i> ${s.province_name || ''} ${s.district_name ? '/ '+s.district_name : ''}</small>
+              <div class="mt-2 d-flex gap-2 flex-wrap">
+                <span class="badge bg-primary badge-report"><i class="bi bi-file-text"></i> ${s.report_count} รายงาน</span>
+                <span class="badge bg-success badge-report"><i class="bi bi-people"></i> ${s.total_students} คน</span>
+                ${s.last_report_date ? `<span class="badge bg-info badge-report">${thaiDate(s.last_report_date)}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) { grid.innerHTML = '<div class="col-12 text-center text-danger py-3">เกิดข้อผิดพลาด</div>'; }
+}
+
+async function loadLatestReports() {
+  const row = document.getElementById('latestReportsRow');
+  try {
+    const reports = await fetchAPI('latest_reports', '&limit=8');
+    if (reports.length === 0) {
+      row.innerHTML = '<div class="col-12 text-center py-4 text-muted">ยังไม่มีรายงาน</div>';
+      return;
+    }
+    row.innerHTML = reports.map(r => {
+      const photos = r.photoUrl ? r.photoUrl.split(',').filter(Boolean) : [];
+      const firstPhoto = photos[0]?.trim();
+      return `
+      <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 h-100" style="cursor:pointer" onclick='showReportDetail(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+          ${firstPhoto ? `<img src="${firstPhoto}" class="report-photo card-img-top" onerror="this.style.display='none'">` : `<div class="report-photo card-img-top bg-light d-flex align-items-center justify-content-center"><span class="fs-1">🍽️</span></div>`}
+          <div class="card-body p-2">
+            <div class="fw-semibold small text-truncate">${r.menu || '-'}</div>
+            <div class="text-muted" style="font-size:.72rem"><i class="bi bi-building"></i> ${r.school_name || '-'}</div>
+            <div class="text-muted" style="font-size:.72rem"><i class="bi bi-calendar"></i> ${thaiDate(r.date)}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { row.innerHTML = '<div class="col-12 text-center text-danger">เกิดข้อผิดพลาด</div>'; }
+}
+
+async function openSchool(id, name, location, logo) {
+  const m = document.getElementById('modalSchoolName');
+  m.textContent = name;
+  document.getElementById('modalSchoolLocation').textContent = location;
+  document.getElementById('modalLogo').innerHTML = logo ? `<img src="${logo}" class="school-logo" onerror="this.outerHTML='<div class=school-logo-placeholder><i class=bi bi-building></i></div>'">` : '<div class="school-logo-placeholder"><i class="bi bi-building"></i></div>';
+  document.getElementById('modalBody').innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+  new bootstrap.Modal(document.getElementById('schoolModal')).show();
+
+  try {
+    const reports = await fetchAPI('school_reports', `&school_id=${id}`);
+    if (reports.length === 0) {
+      document.getElementById('modalBody').innerHTML = '<div class="text-center py-4"><div class="fs-1">📭</div><p class="text-muted">ยังไม่มีรายงานอาหารกลางวัน</p></div>';
+      return;
+    }
+    document.getElementById('modalBody').innerHTML = reports.map(r => {
+      const photos = r.photoUrl ? r.photoUrl.split(',').filter(Boolean) : [];
+      return `
+      <div class="d-flex gap-3 p-3 border-bottom" style="cursor:pointer" onclick='showReportDetail(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+        ${photos[0] ? `<img src="${photos[0].trim()}" style="width:80px;height:60px;object-fit:cover;border-radius:8px" onerror="this.style.display='none'">` : '<div style="width:80px;height:60px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center">🍽️</div>'}
+        <div class="flex-grow-1">
+          <div class="fw-semibold">${r.menu || '-'}</div>
+          <small class="text-muted">${thaiDate(r.date)} &bull; 👥 ${r.studentsFed}/${r.totalStudents} คน &bull; 💰 ${Number(r.budgetPerHead).toLocaleString()} บาท/หัว</small>
+          ${parseFloat(r.actualSpent) > 0 ? `<div class="small"><span class="text-success">ใช้จ่าย: ${Number(r.actualSpent).toLocaleString()} บาท</span></div>` : ''}
+        </div>
+        <div class="text-end">${photos.length > 1 ? `<span class="badge bg-secondary">${photos.length} รูป</span>` : ''}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { document.getElementById('modalBody').innerHTML = '<div class="text-center text-danger py-3">เกิดข้อผิดพลาด</div>'; }
+}
+
+function showReportDetail(r) {
+  const photos = r.photoUrl ? r.photoUrl.split(',').filter(Boolean) : [];
+  document.getElementById('detailTitle').textContent = thaiDate(r.date) + ' - ' + (r.menu || '-');
+  const totalBudget = (parseFloat(r.budgetPerHead)||0) * (parseInt(r.studentsFed)||0);
+  document.getElementById('detailBody').innerHTML = `
+    ${photos.length ? `<div class="modal-report-photos d-flex gap-2 flex-wrap justify-content-center mb-3">${photos.map(u=>`<img src="${u.trim()}" onclick="window.open('${u.trim()}')" onerror="this.style.display='none'">`).join('')}</div>` : ''}
+    ${r.school_name ? `<div class="alert alert-light py-2 px-3 small"><i class="bi bi-building"></i> <strong>${r.school_name}</strong></div>` : ''}
+    <table class="table table-sm small">
+      <tr><td class="text-muted" width="40%">🍽️ เมนู</td><td class="fw-semibold">${r.menu || '-'}</td></tr>
+      <tr><td class="text-muted">👥 นักเรียน</td><td>${r.studentsFed}/${r.totalStudents} คน</td></tr>
+      <tr><td class="text-muted">💰 งบ/หัว</td><td>${Number(r.budgetPerHead).toLocaleString(undefined,{minimumFractionDigits:2})} บาท</td></tr>
+      <tr><td class="text-muted">💵 งบรวม</td><td>${totalBudget.toLocaleString(undefined,{minimumFractionDigits:2})} บาท</td></tr>
+      <tr><td class="text-muted">💸 ใช้จ่ายจริง</td><td class="${parseFloat(r.actualSpent)>totalBudget?'text-danger fw-bold':''}">${Number(r.actualSpent||0).toLocaleString(undefined,{minimumFractionDigits:2})} บาท</td></tr>
+      ${r.note ? `<tr><td class="text-muted">📝 หมายเหตุ</td><td>${r.note}</td></tr>` : ''}
+    </table>`;
+  new bootstrap.Modal(document.getElementById('reportDetailModal')).show();
+}
+
+function esc(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Swal from 'sweetalert2';
 import html2canvas from 'html2canvas';
-import { UtensilsCrossed, Settings, School, Cloud } from 'lucide-react';
+import { UtensilsCrossed, Settings, School, LogOut, Bell } from 'lucide-react';
 import StatsCards from './components/StatsCards';
 import BudgetBar from './components/BudgetBar';
 import ReportTable from './components/ReportTable';
@@ -14,6 +14,8 @@ import * as api from './utils/api';
 const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
 
 export default function App() {
+  const [authed, setAuthed] = useState(false);
+  const [user, setUser] = useState(null);
   const [tab, setTab] = useState('report');
   const [reports, setReports] = useState([]);
   const [allReports, setAllReports] = useState([]);
@@ -27,6 +29,15 @@ export default function App() {
   const imgRef = useRef(null);
   const [imgReport, setImgReport] = useState(null);
 
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) { window.location.href = '/login.html'; return; }
+    api.getMe().then(r => {
+      setUser(r.data.user);
+      setAuthed(true);
+    }).catch(() => { window.location.href = '/login.html'; });
+  }, []);
+
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
@@ -38,7 +49,7 @@ export default function App() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { loadAll(); }, [loadAll]);
+  useEffect(() => { if (authed) loadAll(); }, [authed, loadAll]);
 
   const handleSearch = (q) => {
     setSearchQ(q);
@@ -169,7 +180,11 @@ export default function App() {
             {settings.logoUrl ? <img src={settings.logoUrl} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white/30" onError={e=>e.target.style.display='none'}/> : <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><School size={20} className="text-white/70"/></div>}
             <div><div className="font-semibold">ระบบรายงานอาหารกลางวัน</div>{settings.schoolName && <div className="text-xs opacity-80">{settings.schoolName}</div>}</div>
           </div>
-          <div className="flex items-center gap-1 text-xs opacity-75"><Cloud size={14}/> PHP + MySQL</div>
+          <div className="flex items-center gap-2">
+            {user && <span className="text-xs opacity-75">{user.fullName}</span>}
+            <button onClick={() => { Swal.fire({ title: 'ออกจากระบบ?', icon: 'question', showCancelButton: true, confirmButtonText: 'ออกจากระบบ', cancelButtonText: 'ยกเลิก' }).then(r => { if (r.isConfirmed) api.logout(); }); }}
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-content-center transition-colors" title="ออกจากระบบ"><LogOut size={16}/></button>
+          </div>
         </div>
       </header>
 
