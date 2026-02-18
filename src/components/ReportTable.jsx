@@ -1,10 +1,10 @@
-import { Search, Plus, Eye, Pencil, Trash2, FileText, MessageCircle } from 'lucide-react';
+import { Search, Plus, Eye, Pencil, Trash2, FileText, MessageCircle, Image } from 'lucide-react';
 import { formatThaiShort, fmtNum } from '../utils/thaiDate';
 import Swal from 'sweetalert2';
 
 export default function ReportTable({
   reports, loading, searchQ, onSearch,
-  onAdd, onEdit, onDelete, onPdf, onLine, onView
+  onAdd, onEdit, onDelete, onPdf, onLine, onView, onImage
 }) {
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -62,6 +62,7 @@ export default function ReportTable({
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
                     <IconBtn onClick={() => onPdf(r)} title="สร้าง PDF" cls="text-red-600 hover:bg-red-50"><FileText size={16} /></IconBtn>
+                    <IconBtn onClick={() => onImage(r)} title="สร้างรูป" cls="text-purple-600 hover:bg-purple-50"><Image size={16} /></IconBtn>
                     <IconBtn onClick={() => onLine(r)} title="ส่ง LINE" cls="text-[#06c755] hover:bg-green-50"><MessageCircle size={16} /></IconBtn>
                     <IconBtn onClick={() => onView(r)} title="ดู" cls="text-[var(--md-primary)] hover:bg-[var(--md-primary-light)]"><Eye size={16} /></IconBtn>
                     <IconBtn onClick={() => onEdit(r)} title="แก้ไข" cls="text-orange-500 hover:bg-orange-50"><Pencil size={16} /></IconBtn>

@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Swal from 'sweetalert2';
+import html2canvas from 'html2canvas';
 import { UtensilsCrossed, Settings, School, Cloud } from 'lucide-react';
 import StatsCards from './components/StatsCards';
 import BudgetBar from './components/BudgetBar';
 import ReportTable from './components/ReportTable';
 import ReportModal from './components/ReportModal';
 import SettingsTab from './components/SettingsTab';
+import ReportImageTemplate from './components/ReportImageTemplate';
 import { formatThaiShort, fmtNum } from './utils/thaiDate';
 import * as api from './utils/api';
 
@@ -22,6 +24,8 @@ export default function App() {
   const [editData, setEditData] = useState(null);
   const [searchQ, setSearchQ] = useState('');
   const searchTimer = useRef(null);
+  const imgRef = useRef(null);
+  const [imgReport, setImgReport] = useState(null);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -94,6 +98,27 @@ export default function App() {
     } catch (e) { Swal.fire('ผิดพลาด', e.message, 'warning'); if (isAuto) loadAll(); }
   };
 
+  const doImage = async (r) => {
+    setImgReport(r);
+    await new Promise(res => setTimeout(res, 300));
+    if (!imgRef.current) { Swal.fire('ผิดพลาด', 'ไม่สามารถสร้าง template ได้', 'error'); return; }
+    Swal.fire({ title: 'กำลังสร้างรูปรายงาน...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+    try {
+      const canvas = await html2canvas(imgRef.current, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff' });
+      const base64 = canvas.toDataURL('image/png');
+      const res = await api.uploadImage(base64, `report_${r.date}_${Date.now()}.png`);
+      if (res.data.success) {
+        const imageUrl = res.data.photoUrl;
+        await api.updateReport({ ...r, imageUrl });
+        await loadAll();
+        Swal.fire({ icon: 'success', title: 'สร้างรูปรายงานสำเร็จ!',
+          html: `<img src="${imageUrl}" style="max-width:100%;border-radius:8px;margin-bottom:8px"><br><a href="${imageUrl}" target="_blank" download style="display:inline-flex;align-items:center;gap:4px;background:#1565c0;color:#fff;padding:8px 16px;border-radius:8px;text-decoration:none;font-family:Prompt;">📥 ดาวน์โหลดรูป</a>`,
+          confirmButtonText: 'ปิด', width: 500 });
+      } else { Swal.fire('ผิดพลาด', res.data.message, 'error'); }
+    } catch (e) { Swal.fire('ผิดพลาด', e.message, 'error'); }
+    finally { setImgReport(null); }
+  };
+
   const doLine = (r) => {
     Swal.fire({
       title: 'ส่งรายงานเข้ากลุ่ม LINE?',
@@ -102,10 +127,25 @@ export default function App() {
       confirmButtonText: '📤 ส่ง LINE', cancelButtonText: 'ยกเลิก'
     }).then(async res => {
       if (!res.isConfirmed) return;
-      Swal.fire({ title: 'กำลังส่ง LINE...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+      Swal.fire({ title: 'กำลังสร้างรูป + ส่ง LINE...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
       try {
-        const lr = await api.sendLine(r);
-        if (lr.data.success) Swal.fire({ icon: 'success', title: lr.data.message, confirmButtonColor: '#06c755' });
+        let sendData = { ...r };
+        if (!r.imageUrl) {
+          setImgReport(r);
+          await new Promise(res => setTimeout(res, 300));
+          if (imgRef.current) {
+            const canvas = await html2canvas(imgRef.current, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff' });
+            const base64 = canvas.toDataURL('image/png');
+            const upRes = await api.uploadImage(base64, `report_${r.date}_${Date.now()}.png`);
+            if (upRes.data.success) {
+              sendData.imageUrl = upRes.data.photoUrl;
+              await api.updateReport({ ...r, imageUrl: upRes.data.photoUrl });
+            }
+          }
+          setImgReport(null);
+        }
+        const lr = await api.sendLine(sendData);
+        if (lr.data.success) { Swal.fire({ icon: 'success', title: lr.data.message, confirmButtonColor: '#06c755' }); loadAll(); }
         else Swal.fire('ไม่สำเร็จ', lr.data.message, 'warning');
       } catch (e) { Swal.fire('ผิดพลาด', e.message, 'error'); }
     });
@@ -145,12 +185,14 @@ export default function App() {
           <BudgetBar stats={stats}/>
           <ReportTable reports={reports} loading={loading} searchQ={searchQ} onSearch={handleSearch}
             onAdd={()=>{setEditData(null);setModalOpen(true);}} onEdit={r=>{setEditData(r);setModalOpen(true);}}
-            onDelete={handleDelete} onPdf={doPdf} onLine={doLine} onView={doView}/>
+            onDelete={handleDelete} onPdf={doPdf} onLine={doLine} onView={doView} onImage={doImage}/>
         </div>
       )}
       {tab === 'settings' && <SettingsTab settings={merged} onSettingsChange={()=>loadAll()} stats={stats}/>}
 
       <ReportModal open={modalOpen} onClose={()=>setModalOpen(false)} onSaved={handleSaved} editData={editData} settings={merged}/>
+
+      {imgReport && <ReportImageTemplate ref={imgRef} report={imgReport} settings={settings} />}
 
       <footer className="bg-[var(--md-primary)] text-white text-center py-4 mt-auto text-sm">
         <div>© {new Date().getFullYear()+543} ระบบรายงานอาหารกลางวัน</div>

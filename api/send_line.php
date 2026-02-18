@@ -57,6 +57,22 @@ if (!empty($d['pdfUrl'])) { $lines[] = ""; $lines[] = "📄 PDF: " . $d['pdfUrl'
 
 $messages = [['type' => 'text', 'text' => implode("\n", $lines)]];
 
+// Add image message if imageUrl exists
+if (!empty($d['imageUrl'])) {
+    $imgUrl = $d['imageUrl'];
+    // Make absolute URL if relative
+    if (strpos($imgUrl, 'http') !== 0) {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'lunch.onestore.cloud';
+        $imgUrl = $scheme . '://' . $host . $imgUrl;
+    }
+    $messages[] = [
+        'type' => 'image',
+        'originalContentUrl' => $imgUrl,
+        'previewImageUrl' => $imgUrl
+    ];
+}
+
 $payload = json_encode(['to' => $groupId, 'messages' => $messages], JSON_UNESCAPED_UNICODE);
 $ch = curl_init('https://api.line.me/v2/bot/message/push');
 curl_setopt_array($ch, [
