@@ -69,14 +69,14 @@ function getSchoolReports() {
 function getLatestReports() {
     $db = getDB();
     $limit = min(intval($_GET['limit'] ?? 20), 50);
-    $stmt = $db->prepare("SELECT lr.*, s.name as school_name, s.logo_url, p.name as province_name, d.name as district_name
+    $limit = intval($limit);
+    $rows = $db->query("SELECT lr.*, s.name as school_name, s.logo_url, p.name as province_name, d.name as district_name
         FROM lunch_reports lr
         LEFT JOIN schools s ON lr.school_id = s.id
         LEFT JOIN provinces p ON s.province_id = p.id
         LEFT JOIN districts d ON s.district_id = d.id
-        ORDER BY lr.date DESC, lr.id DESC LIMIT ?");
-    $stmt->execute([$limit]);
-    jsonResponse($stmt->fetchAll());
+        ORDER BY lr.date DESC, lr.id DESC LIMIT $limit")->fetchAll();
+    jsonResponse($rows);
 }
 
 function getDashboardStats() {
