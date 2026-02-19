@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Swal from 'sweetalert2';
 import html2canvas from 'html2canvas';
-import { UtensilsCrossed, Settings, School, LogOut, Bell } from 'lucide-react';
+import { UtensilsCrossed, Settings, School, LogOut, Bell, ShieldCheck } from 'lucide-react';
+import AdminTab from './components/AdminTab';
 import StatsCards from './components/StatsCards';
 import BudgetBar from './components/BudgetBar';
 import ReportTable from './components/ReportTable';
@@ -189,7 +190,9 @@ export default function App() {
       </header>
 
       <nav className="bg-white border-b border-[var(--md-outline)] shadow-sm flex">
-        {[['report',<UtensilsCrossed size={18}/>,'รายงานอาหารกลางวัน'],['settings',<Settings size={18}/>,'ตั้งค่า']].map(([id,icon,label])=>(
+        {[['report',<UtensilsCrossed size={18}/>,'รายงาน'],['settings',<Settings size={18}/>,'ตั้งค่า'],
+          ...(user?.role==='admin' ? [['admin',<ShieldCheck size={18}/>,'จัดการระบบ']] : [])
+        ].map(([id,icon,label])=>(
           <button key={id} onClick={()=>setTab(id)} className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium border-b-2 transition-all ${tab===id?'text-[var(--md-primary)] border-[var(--md-primary)]':'text-[var(--md-text2)] border-transparent hover:text-[var(--md-primary)] hover:bg-[var(--md-primary-light)]'}`}>{icon}{label}</button>
         ))}
       </nav>
@@ -204,6 +207,7 @@ export default function App() {
         </div>
       )}
       {tab === 'settings' && <SettingsTab settings={merged} onSettingsChange={()=>loadAll()} stats={stats}/>}
+      {tab === 'admin' && user?.role === 'admin' && <AdminTab />}
 
       <ReportModal open={modalOpen} onClose={()=>setModalOpen(false)} onSaved={handleSaved} editData={editData} settings={merged}/>
 

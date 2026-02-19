@@ -1,21 +1,37 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/auth_helper.php';
 
+$user = requireAuth();
+$schoolId = $user['school_id'];
 $db = getDB();
 
-// Get settings
-$rows = $db->query("SELECT setting_key, setting_value FROM settings")->fetchAll();
-$settings = [];
-foreach ($rows as $r) $settings[$r['setting_key']] = $r['setting_value'];
+// Get school settings
+if ($schoolId) {
+    $stmt = $db->prepare("SELECT * FROM schools WHERE id = ?");
+    $stmt->execute([$schoolId]);
+    $school = $stmt->fetch();
+    $totalBudgetReceived = floatval($school['total_budget_received'] ?? 0);
+    $budgetPerHead = floatval($school['budget_per_head'] ?? 0);
+    $totalStudents = intval($school['total_students'] ?? 0);
+    $spentAtReset = floatval($school['spent_at_reset'] ?? 0);
+    $budgetReceivedDate = $school['budget_received_date'] ?? '';
 
-$totalBudgetReceived = floatval($settings['totalBudgetReceived'] ?? 0);
-$budgetPerHead = floatval($settings['budgetPerHead'] ?? 0);
-$totalStudents = intval($settings['totalStudents'] ?? 0);
-$spentAtReset = floatval($settings['spentAtReset'] ?? 0);
-$budgetReceivedDate = $settings['budgetReceivedDate'] ?? '';
+    $stmt2 = $db->prepare("SELECT actualSpent FROM lunch_reports WHERE school_id = ?");
+    $stmt2->execute([$schoolId]);
+    $reports = $stmt2->fetchAll();
+} else {
+    $rows = $db->query("SELECT setting_key, setting_value FROM settings")->fetchAll();
+    $s = [];
+    foreach ($rows as $r) $s[$r['setting_key']] = $r['setting_value'];
+    $totalBudgetReceived = floatval($s['totalBudgetReceived'] ?? 0);
+    $budgetPerHead = floatval($s['budgetPerHead'] ?? 0);
+    $totalStudents = intval($s['totalStudents'] ?? 0);
+    $spentAtReset = floatval($s['spentAtReset'] ?? 0);
+    $budgetReceivedDate = $s['budgetReceivedDate'] ?? '';
+    $reports = $db->query("SELECT actualSpent FROM lunch_reports")->fetchAll();
+}
 
-// Get reports
-$reports = $db->query("SELECT actualSpent FROM lunch_reports")->fetchAll();
 $totalReports = count($reports);
 $spentBudget = 0;
 foreach ($reports as $r) $spentBudget += floatval($r['actualSpent'] ?? 0);
