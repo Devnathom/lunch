@@ -58,6 +58,10 @@ CREATE TABLE IF NOT EXISTS users (
   FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- เพิ่ม tambon, moo ใน schools (ถ้ายังไม่มี)
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS tambon VARCHAR(100) DEFAULT '' AFTER district_id;
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS moo VARCHAR(50) DEFAULT '' AFTER tambon;
+
 -- เพิ่ม school_id ใน lunch_reports (ถ้ายังไม่มี)
 ALTER TABLE lunch_reports ADD COLUMN IF NOT EXISTS school_id INT DEFAULT NULL AFTER id;
 ALTER TABLE lunch_reports ADD INDEX IF NOT EXISTS idx_school (school_id);

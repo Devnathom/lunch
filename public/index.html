@@ -250,12 +250,12 @@ async function loadSchools() {
     }
     grid.innerHTML = schools.map(s => `
       <div class="col-md-6 col-lg-4">
-        <div class="card school-card shadow-sm h-100" onclick="openSchool(${s.id},'${esc(s.name)}','${esc(s.province_name)} / ${esc(s.district_name)}','${esc(s.logo_url)}')">
+        <div class="card school-card shadow-sm h-100" onclick="openSchool(${s.id},'${esc(s.name)}','${fullAddr(s)}','${esc(s.logo_url)}')">
           <div class="card-body d-flex gap-3">
             ${s.logo_url ? `<img src="${s.logo_url}" class="school-logo" onerror="this.outerHTML='<div class=school-logo-placeholder><i class=bi bi-building></i></div>'">` : '<div class="school-logo-placeholder"><i class="bi bi-building"></i></div>'}
             <div class="flex-grow-1 min-w-0">
               <h6 class="fw-semibold mb-1 text-truncate">${s.name}</h6>
-              <small class="text-muted"><i class="bi bi-geo-alt"></i> ${s.province_name || ''} ${s.district_name ? '/ '+s.district_name : ''}</small>
+              <small class="text-muted"><i class="bi bi-geo-alt"></i> ${fullAddr(s)}</small>
               <div class="mt-2 d-flex gap-2 flex-wrap">
                 <span class="badge bg-primary badge-report"><i class="bi bi-file-text"></i> ${s.report_count} รายงาน</span>
                 <span class="badge bg-success badge-report"><i class="bi bi-people"></i> ${s.total_students} คน</span>
@@ -343,6 +343,14 @@ function showReportDetail(r) {
   new bootstrap.Modal(document.getElementById('reportDetailModal')).show();
 }
 
+function fullAddr(s) {
+  const parts = [];
+  if (s.moo) parts.push(s.moo);
+  if (s.tambon) parts.push('ต.' + s.tambon);
+  if (s.district_name) parts.push('อ.' + s.district_name);
+  if (s.province_name) parts.push('จ.' + s.province_name);
+  return parts.join(' ') || '-';
+}
 function esc(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 </script>
 </body>

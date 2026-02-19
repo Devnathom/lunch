@@ -69,10 +69,18 @@ export default function AdminTab() {
     const { value: fv } = await Swal.fire({
       title: 'เพิ่มโรงเรียน', width: 600, confirmButtonText: 'เพิ่ม', showCancelButton: true, cancelButtonText: 'ยกเลิก',
       html: `<div style="text-align:left;font-size:.9rem">
+        <p style="font-weight:600;margin:0 0 6px;color:#1565c0">📍 ที่อยู่</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
           <div><label class="small text-muted">จังหวัด</label><select id="s-prov" class="swal2-select" style="width:100%"><option value="">-- เลือกจังหวัด --</option>${provOpts}</select></div>
-          <div><label class="small text-muted">อำเภอ</label><input id="s-dist-name" class="swal2-input" list="dist-list" placeholder="พิมพ์หรือเลือกอำเภอ..." style="margin:0;width:100%"><datalist id="dist-list"></datalist></div>
+          <div><label class="small text-muted">อำเภอ/เขต</label><input id="s-dist-name" class="swal2-input" list="dist-list" placeholder="พิมพ์หรือเลือกอำเภอ..." style="margin:0;width:100%"><datalist id="dist-list"></datalist></div>
         </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div><label class="small text-muted">ตำบล/แขวง</label><input id="s-tambon" class="swal2-input" placeholder="ชื่อตำบล..." style="margin:0;width:100%"></div>
+          <div><label class="small text-muted">หมู่ที่ / หมู่บ้าน</label><input id="s-moo" class="swal2-input" placeholder="เช่น หมู่ 5 บ้านหนองใหญ่" style="margin:0;width:100%"></div>
+        </div>
+        <div style="margin-bottom:8px"><label class="small text-muted">ที่อยู่เพิ่มเติม (ถนน ซอย เลขที่)</label><input id="s-addr" class="swal2-input" placeholder="เช่น 99 ถ.ราชดำเนิน" style="margin:0;width:100%"></div>
+        <hr style="margin:10px 0">
+        <p style="font-weight:600;margin:0 0 6px;color:#1565c0">🏫 ข้อมูลโรงเรียน</p>
         <div style="margin-bottom:8px"><label class="small text-muted">ชื่อโรงเรียน</label><input id="s-name" class="swal2-input" placeholder="โรงเรียน..." style="margin:0;width:100%"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
           <div><label class="small text-muted">ผู้อำนวยการ</label><input id="s-dir" class="swal2-input" placeholder="ชื่อ-นามสกุล" style="margin:0;width:100%"></div>
@@ -110,6 +118,9 @@ export default function AdminTab() {
         if (!dist) { Swal.showValidationMessage('กรุณากรอกอำเภอ'); return false; }
         return {
           province_id: prov, district_name: dist,
+          tambon: document.getElementById('s-tambon').value.trim(),
+          moo: document.getElementById('s-moo').value.trim(),
+          address: document.getElementById('s-addr').value.trim(),
           name, director_name: document.getElementById('s-dir').value,
           director_position: document.getElementById('s-pos').value,
           affiliation: document.getElementById('s-aff').value,
@@ -217,7 +228,7 @@ export default function AdminTab() {
                   <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50">
                     <td className="px-3 py-2 text-gray-400">{i + 1}</td>
                     <td className="px-3 py-2 font-medium">{s.name}</td>
-                    <td className="px-3 py-2 text-xs text-gray-500">{s.province_name} / {s.district_name}</td>
+                    <td className="px-3 py-2 text-xs text-gray-500">{[s.moo, s.tambon && `ต.${s.tambon}`, s.district_name && `อ.${s.district_name}`, s.province_name && `จ.${s.province_name}`].filter(Boolean).join(' ')}</td>
                     <td className="px-3 py-2">{s.total_students}</td>
                     <td className="px-3 py-2">{s.budget_per_head}</td>
                     <td className="px-3 py-2"><span className="bg-blue-50 text-blue-700 text-xs px-2 py-0.5 rounded">{s.report_count}</span></td>

@@ -112,9 +112,10 @@ function addSchool() {
         else { $db->prepare("INSERT INTO districts (province_id, name) VALUES (?, ?)")->execute([$pid, $dname]); $districtId = $db->lastInsertId(); }
     }
 
-    $stmt = $db->prepare("INSERT INTO schools (province_id, district_id, name, address, phone, affiliation, director_name, director_position, budget_per_head, total_students) VALUES (?,?,?,?,?,?,?,?,?,?)");
+    $stmt = $db->prepare("INSERT INTO schools (province_id, district_id, tambon, moo, name, address, phone, affiliation, director_name, director_position, budget_per_head, total_students) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
     $stmt->execute([
         intval($d['province_id']), $districtId,
+        $d['tambon'] ?? '', $d['moo'] ?? '',
         $d['name'] ?? '', $d['address'] ?? '', $d['phone'] ?? '',
         $d['affiliation'] ?? '', $d['director_name'] ?? '', $d['director_position'] ?? '',
         floatval($d['budget_per_head'] ?? 21), intval($d['total_students'] ?? 0)
@@ -141,9 +142,10 @@ function updateSchool() {
     if (empty($d['id'])) jsonResponse(['success' => false, 'message' => 'ไม่พบข้อมูล']);
     $db = getDB();
 
-    $stmt = $db->prepare("UPDATE schools SET province_id=?, district_id=?, name=?, address=?, phone=?, affiliation=?, director_name=?, director_position=?, budget_per_head=?, total_students=?, total_budget_received=?, budget_received_date=? WHERE id=?");
+    $stmt = $db->prepare("UPDATE schools SET province_id=?, district_id=?, tambon=?, moo=?, name=?, address=?, phone=?, affiliation=?, director_name=?, director_position=?, budget_per_head=?, total_students=?, total_budget_received=?, budget_received_date=? WHERE id=?");
     $stmt->execute([
         intval($d['province_id']), intval($d['district_id']),
+        $d['tambon'] ?? '', $d['moo'] ?? '',
         $d['name'] ?? '', $d['address'] ?? '', $d['phone'] ?? '',
         $d['affiliation'] ?? '', $d['director_name'] ?? '', $d['director_position'] ?? '',
         floatval($d['budget_per_head'] ?? 21), intval($d['total_students'] ?? 0),

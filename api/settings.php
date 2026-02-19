@@ -19,6 +19,8 @@ if ($method === 'GET') {
                 'directorPosition' => $school['director_position'],
                 'schoolAffiliation' => $school['affiliation'],
                 'schoolAddress' => $school['address'],
+                'schoolTambon' => $school['tambon'],
+                'schoolMoo' => $school['moo'],
                 'schoolPhone' => $school['phone'],
                 'logoUrl' => $school['logo_url'],
                 'budgetPerHead' => $school['budget_per_head'],
@@ -45,7 +47,7 @@ if ($method === 'GET') {
     if ($schoolId) {
         $map = [
             'schoolName' => 'name', 'directorName' => 'director_name', 'directorPosition' => 'director_position',
-            'schoolAffiliation' => 'affiliation', 'schoolAddress' => 'address', 'schoolPhone' => 'phone',
+            'schoolAffiliation' => 'affiliation', 'schoolAddress' => 'address', 'schoolTambon' => 'tambon', 'schoolMoo' => 'moo', 'schoolPhone' => 'phone',
             'logoUrl' => 'logo_url', 'budgetPerHead' => 'budget_per_head', 'totalStudents' => 'total_students',
             'totalBudgetReceived' => 'total_budget_received', 'budgetReceivedDate' => 'budget_received_date',
             'spentAtReset' => 'spent_at_reset', 'lineChannelToken' => 'line_channel_token', 'lineGroupId' => 'line_group_id',
