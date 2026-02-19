@@ -170,52 +170,101 @@ export default function App() {
   };
 
   const merged = { ...settings, remainingBudget: stats.remainingBudget };
+  const isAdmin = user?.role === 'admin';
+  const pageTitle = { report: 'รายงานอาหารกลางวัน', settings: 'ตั้งค่าระบบ', admin: 'จัดการระบบ' }[tab] || '';
+
+  if (!authed) return <div className="d-flex justify-content-center align-items-center" style={{minHeight:'100vh'}}><div className="spinner-border text-primary" /></div>;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--md-bg)]">
-      {loading && <div className="fixed bottom-6 right-6 bg-white rounded-xl shadow-xl flex items-center gap-3 px-4 py-3 z-50"><div className="md-spinner"/><span className="text-sm text-[var(--md-text2)]">กำลังโหลด...</span></div>}
-
-      <header className="bg-[var(--md-primary)] text-white sticky top-0 z-40 shadow-md">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {settings.logoUrl ? <img src={settings.logoUrl} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white/30" onError={e=>e.target.style.display='none'}/> : <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><School size={20} className="text-white/70"/></div>}
-            <div><div className="font-semibold">ระบบรายงานอาหารกลางวัน</div>{settings.schoolName && <div className="text-xs opacity-80">{settings.schoolName}</div>}</div>
-          </div>
-          <div className="flex items-center gap-2">
-            {user && <span className="text-xs opacity-75">{user.fullName}</span>}
-            <button onClick={() => { Swal.fire({ title: 'ออกจากระบบ?', icon: 'question', showCancelButton: true, confirmButtonText: 'ออกจากระบบ', cancelButtonText: 'ยกเลิก' }).then(r => { if (r.isConfirmed) api.logout(); }); }}
-              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-content-center transition-colors" title="ออกจากระบบ"><LogOut size={16}/></button>
-          </div>
-        </div>
-      </header>
-
-      <nav className="bg-white border-b border-[var(--md-outline)] shadow-sm flex">
-        {[['report',<UtensilsCrossed size={18}/>,'รายงาน'],['settings',<Settings size={18}/>,'ตั้งค่า'],
-          ...(user?.role==='admin' ? [['admin',<ShieldCheck size={18}/>,'จัดการระบบ']] : [])
-        ].map(([id,icon,label])=>(
-          <button key={id} onClick={()=>setTab(id)} className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium border-b-2 transition-all ${tab===id?'text-[var(--md-primary)] border-[var(--md-primary)]':'text-[var(--md-text2)] border-transparent hover:text-[var(--md-primary)] hover:bg-[var(--md-primary-light)]'}`}>{icon}{label}</button>
-        ))}
+    <div className="wrapper">
+      {/* Navbar */}
+      <nav className="main-header navbar navbar-expand navbar-dark" style={{background:'linear-gradient(135deg,#1565c0,#0d47a1)'}}>
+        <ul className="navbar-nav">
+          <li className="nav-item"><a className="nav-link" data-widget="pushmenu" href="#" role="button"><i className="fas fa-bars"/></a></li>
+          <li className="nav-item d-none d-sm-inline-block"><span className="nav-link" style={{fontWeight:600}}>{settings.schoolName || 'ระบบรายงานอาหารกลางวัน'}</span></li>
+        </ul>
+        <ul className="navbar-nav ml-auto">
+          {user && <li className="nav-item d-none d-md-block"><span className="nav-link"><i className="fas fa-user-circle mr-1"/>{user.fullName}</span></li>}
+          <li className="nav-item">
+            <a className="nav-link" href="#" role="button" title="ออกจากระบบ" onClick={e=>{e.preventDefault();Swal.fire({title:'ออกจากระบบ?',icon:'question',showCancelButton:true,confirmButtonText:'ออกจากระบบ',cancelButtonText:'ยกเลิก'}).then(r=>{if(r.isConfirmed)api.logout()})}}>
+              <i className="fas fa-sign-out-alt"/>
+            </a>
+          </li>
+        </ul>
       </nav>
 
-      {tab === 'report' && (
-        <div className="max-w-6xl mx-auto w-full px-4 py-4 pb-10">
-          <StatsCards stats={stats}/>
-          <BudgetBar stats={stats}/>
-          <ReportTable reports={reports} loading={loading} searchQ={searchQ} onSearch={handleSearch}
-            onAdd={()=>{setEditData(null);setModalOpen(true);}} onEdit={r=>{setEditData(r);setModalOpen(true);}}
-            onDelete={handleDelete} onPdf={doPdf} onLine={doLine} onView={doView} onImage={doImage}/>
+      {/* Sidebar */}
+      <aside className="main-sidebar sidebar-dark-primary elevation-4" style={{background:'linear-gradient(180deg,#0d47a1,#1a237e)'}}>
+        <a href="/app.html" className="brand-link text-center" style={{borderBottom:'1px solid rgba(255,255,255,.1)'}}>
+          {settings.logoUrl
+            ? <img src={settings.logoUrl} alt="" className="brand-image img-circle elevation-3" style={{opacity:.9}} onError={e=>{e.target.style.display='none'}}/>
+            : <i className="fas fa-utensils" style={{fontSize:'1.5rem',opacity:.8}}/>}
+          <span className="brand-text font-weight-light" style={{fontSize:'.9rem'}}>อาหารกลางวัน</span>
+        </a>
+        <div className="sidebar">
+          <div className="user-panel mt-3 pb-3 mb-3 d-flex" style={{borderBottom:'1px solid rgba(255,255,255,.1)'}}>
+            <div className="image"><i className="fas fa-user-circle fa-2x text-light" style={{opacity:.7}}/></div>
+            <div className="info"><span className="d-block text-light" style={{fontSize:'.85rem'}}>{user?.fullName}</span><small className="text-light" style={{opacity:.5}}>{isAdmin?'ผู้ดูแลระบบ':'โรงเรียน'}</small></div>
+          </div>
+          <nav className="mt-2">
+            <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+              <li className="nav-item">
+                <a href="#" className={`nav-link${tab==='report'?' active':''}`} onClick={e=>{e.preventDefault();setTab('report')}}>
+                  <i className="nav-icon fas fa-clipboard-list"/><p>รายงาน</p>
+                </a>
+              </li>
+              <li className="nav-item">
+                <a href="#" className={`nav-link${tab==='settings'?' active':''}`} onClick={e=>{e.preventDefault();setTab('settings')}}>
+                  <i className="nav-icon fas fa-cog"/><p>ตั้งค่า</p>
+                </a>
+              </li>
+              {isAdmin && <li className="nav-item">
+                <a href="#" className={`nav-link${tab==='admin'?' active':''}`} onClick={e=>{e.preventDefault();setTab('admin')}}>
+                  <i className="nav-icon fas fa-shield-alt"/><p>จัดการระบบ</p>
+                </a>
+              </li>}
+              <li className="nav-header" style={{color:'rgba(255,255,255,.4)'}}>ลิงก์</li>
+              <li className="nav-item">
+                <a href="/" className="nav-link" target="_blank"><i className="nav-icon fas fa-globe"/><p>หน้าหลัก</p></a>
+              </li>
+            </ul>
+          </nav>
         </div>
-      )}
-      {tab === 'settings' && <SettingsTab settings={merged} onSettingsChange={()=>loadAll()} stats={stats}/>}
-      {tab === 'admin' && user?.role === 'admin' && <AdminTab />}
+      </aside>
+
+      {/* Content Wrapper */}
+      <div className="content-wrapper" style={{background:'#f4f6f9'}}>
+        <div className="content-header">
+          <div className="container-fluid">
+            <div className="row mb-2">
+              <div className="col-sm-6"><h1 className="m-0" style={{fontSize:'1.3rem'}}><i className={`fas fa-${tab==='report'?'clipboard-list':tab==='settings'?'cog':'shield-alt'} mr-2`} style={{color:'#1565c0'}}/>{pageTitle}</h1></div>
+              <div className="col-sm-6"><ol className="breadcrumb float-sm-right"><li className="breadcrumb-item"><a href="/app.html">หน้าหลัก</a></li><li className="breadcrumb-item active">{pageTitle}</li></ol></div>
+            </div>
+          </div>
+        </div>
+
+        <section className="content">
+          <div className="container-fluid">
+            {loading && <div className="overlay-wrapper" style={{position:'fixed',bottom:20,right:20,zIndex:1050}}><div className="badge badge-primary p-2"><i className="fas fa-sync fa-spin mr-1"/>กำลังโหลด...</div></div>}
+
+            {tab === 'report' && <>
+              <StatsCards stats={stats}/>
+              <BudgetBar stats={stats}/>
+              <ReportTable reports={reports} loading={loading} searchQ={searchQ} onSearch={handleSearch}
+                onAdd={()=>{setEditData(null);setModalOpen(true)}} onEdit={r=>{setEditData(r);setModalOpen(true)}}
+                onDelete={handleDelete} onPdf={doPdf} onLine={doLine} onView={doView} onImage={doImage}/>
+            </>}
+            {tab === 'settings' && <SettingsTab settings={merged} onSettingsChange={()=>loadAll()} stats={stats}/>}
+            {tab === 'admin' && isAdmin && <AdminTab />}
+          </div>
+        </section>
+      </div>
 
       <ReportModal open={modalOpen} onClose={()=>setModalOpen(false)} onSaved={handleSaved} editData={editData} settings={merged}/>
-
       {imgReport && <ReportImageTemplate ref={imgRef} report={imgReport} settings={settings} />}
 
-      <footer className="bg-[var(--md-primary)] text-white text-center py-4 mt-auto text-sm">
-        <div>© {new Date().getFullYear()+543} ระบบรายงานอาหารกลางวัน</div>
-        <div>พัฒนาโดย <strong>รัชเดช ศรีแก้ว</strong></div>
+      <footer className="main-footer text-center" style={{fontSize:'.85rem'}}>
+        <strong>© {new Date().getFullYear()+543} ระบบรายงานอาหารกลางวัน</strong> — พัฒนาโดย รัชเดช ศรีแก้ว
       </footer>
     </div>
   );

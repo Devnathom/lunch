@@ -104,117 +104,78 @@ export default function SettingsTab({ settings, onSettingsChange, stats }) {
   const totalDays = costPerDay > 0 ? Math.floor(totalBudget / costPerDay) : 0;
   const remainingDays = costPerDay > 0 ? Math.floor(remainingBudget / costPerDay) : 0;
 
-  const inputCls = "w-full border border-[var(--md-outline)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--md-primary)] focus:ring-1 focus:ring-[var(--md-primary)]";
-  const cardCls = "bg-white rounded-xl shadow-sm p-5 mb-4";
-  const titleCls = "font-semibold text-base mb-4 flex items-center gap-2 text-[var(--md-text)]";
-  const labelCls = "block text-sm font-medium text-[var(--md-text2)] mb-1";
-
   return (
-    <div className="container mx-auto px-4 py-4 max-w-4xl pb-10">
-
-      {/* School Info */}
-      <div className={cardCls}>
-        <div className={titleCls}>
-          <School size={18} className="text-[var(--md-primary)]" /> ข้อมูลโรงเรียน
-        </div>
-
-        {/* Logo */}
-        <div className="text-center mb-4">
-          <div
-            className="w-28 h-28 rounded-full mx-auto border-2 border-dashed border-[var(--md-outline)] flex items-center justify-center cursor-pointer overflow-hidden hover:border-[var(--md-primary)] transition-colors"
-            onClick={() => document.getElementById('logoInput').click()}
-          >
-            {form.logoUrl ? (
-              <img src={form.logoUrl} alt="logo" className="w-full h-full object-cover"
-                onError={e => { e.target.style.display='none'; }} />
-            ) : (
-              <ImagePlus size={32} className="text-gray-300" />
-            )}
+    <div className="row">
+      <div className="col-lg-8">
+        {/* School Info */}
+        <div className="card card-outline card-primary">
+          <div className="card-header"><h3 className="card-title"><i className="fas fa-school mr-2"/>ข้อมูลโรงเรียน</h3></div>
+          <div className="card-body">
+            <div className="text-center mb-3">
+              <div style={{width:100,height:100,borderRadius:'50%',border:'2px dashed #adb5bd',margin:'0 auto',overflow:'hidden',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',background:'#f8f9fa'}}
+                onClick={()=>document.getElementById('logoInput').click()}>
+                {form.logoUrl ? <img src={form.logoUrl} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} onError={e=>{e.target.style.display='none'}}/> : <i className="fas fa-image fa-2x text-muted"/>}
+              </div>
+              <small className="text-muted">คลิกเพื่ออัปโหลดโลโก้</small>
+              <input id="logoInput" type="file" className="d-none" accept="image/*" onChange={handleLogoUpload}/>
+            </div>
+            <div className="row">
+              <div className="col-md-6 form-group"><label>ชื่อโรงเรียน</label><input className="form-control" value={form.schoolName} onChange={e=>set('schoolName',e.target.value)} placeholder="โรงเรียน..."/></div>
+              <div className="col-md-6 form-group"><label>ชื่อผู้อำนวยการ</label><input className="form-control" value={form.directorName} onChange={e=>set('directorName',e.target.value)} placeholder="ชื่อ-นามสกุล"/></div>
+              <div className="col-md-6 form-group"><label>ตำแหน่ง</label><input className="form-control" value={form.directorPosition} onChange={e=>set('directorPosition',e.target.value)} placeholder="ผู้อำนวยการโรงเรียน"/></div>
+              <div className="col-md-6 form-group"><label>สังกัด</label><input className="form-control" value={form.schoolAffiliation} onChange={e=>set('schoolAffiliation',e.target.value)} placeholder="สพป. เชียงใหม่ เขต 1"/></div>
+              <div className="col-12 form-group"><label>ที่อยู่โรงเรียน</label><textarea className="form-control" rows={2} value={form.schoolAddress} onChange={e=>set('schoolAddress',e.target.value)} placeholder="ที่อยู่เต็ม..."/></div>
+              <div className="col-md-6 form-group"><label>เบอร์โทรศัพท์</label><input className="form-control" value={form.schoolPhone} onChange={e=>set('schoolPhone',e.target.value)} placeholder="0xx-xxx-xxxx"/></div>
+            </div>
           </div>
-          <div className="text-xs text-[var(--md-text2)] mt-1">คลิกเพื่ออัปโหลดโลโก้โรงเรียน</div>
-          <input id="logoInput" type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
         </div>
 
-        <div className="border-t border-[var(--md-outline)] mb-4" />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div><label className={labelCls}>ชื่อโรงเรียน</label>
-            <input className={inputCls} value={form.schoolName} onChange={e => set('schoolName', e.target.value)} placeholder="โรงเรียน..." /></div>
-          <div><label className={labelCls}>ชื่อผู้อำนวยการ / ครูใหญ่</label>
-            <input className={inputCls} value={form.directorName} onChange={e => set('directorName', e.target.value)} placeholder="ชื่อ-นามสกุล" /></div>
-          <div><label className={labelCls}>ตำแหน่ง</label>
-            <input className={inputCls} value={form.directorPosition} onChange={e => set('directorPosition', e.target.value)} placeholder="เช่น ผู้อำนวยการโรงเรียน" /></div>
-          <div><label className={labelCls}>สังกัด</label>
-            <input className={inputCls} value={form.schoolAffiliation} onChange={e => set('schoolAffiliation', e.target.value)} placeholder="เช่น สพป. เชียงใหม่ เขต 1" /></div>
-          <div className="md:col-span-2"><label className={labelCls}>ที่อยู่โรงเรียน</label>
-            <textarea className={inputCls + " resize-y"} rows={2} value={form.schoolAddress} onChange={e => set('schoolAddress', e.target.value)} placeholder="ที่อยู่เต็ม..." /></div>
-          <div><label className={labelCls}>เบอร์โทรศัพท์</label>
-            <input className={inputCls} value={form.schoolPhone} onChange={e => set('schoolPhone', e.target.value)} placeholder="0xx-xxx-xxxx" /></div>
-        </div>
-      </div>
-
-      {/* Budget */}
-      <div className={cardCls}>
-        <div className={titleCls}>
-          <Landmark size={18} className="text-[var(--md-primary)]" /> งบประมาณอาหารกลางวัน
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          <div><label className={labelCls}>งบประมาณ/หัว (บาท)</label>
-            <input type="number" className={inputCls} value={form.budgetPerHead} onChange={e => set('budgetPerHead', e.target.value)} min="0" step="0.01" placeholder="เช่น 21" /></div>
-          <div><label className={labelCls}>จำนวนนักเรียน (คน)</label>
-            <input type="number" className={inputCls} value={form.totalStudents} onChange={e => set('totalStudents', e.target.value)} min="0" placeholder="จำนวน" /></div>
-          <div><label className={labelCls}>เงินที่ได้รับจัดสรร (บาท)</label>
-            <input type="number" className={inputCls} value={form.totalBudgetReceived}
-              onChange={e => set('totalBudgetReceived', e.target.value)}
-              onBlur={e => { if (e.target.value !== prevBudget) handleBudgetChange(e.target.value); }}
-              min="0" step="0.01" placeholder="จำนวนเงิน" /></div>
-          <div><label className={labelCls}>วันที่ได้รับเงิน</label>
-            <ThaiDatePicker value={form.budgetReceivedDate} onChange={v => set('budgetReceivedDate', v)} /></div>
-        </div>
-        <div className="border-t border-[var(--md-outline)] mb-3" />
-        <div className="bg-gray-50 rounded-lg p-3">
-          <div className="text-xs font-semibold mb-2 flex items-center gap-1 text-[var(--md-primary)]">
-            🧮 ผลการคำนวณ (อัตโนมัติ)
+        {/* Budget */}
+        <div className="card card-outline card-success">
+          <div className="card-header"><h3 className="card-title"><i className="fas fa-landmark mr-2"/>งบประมาณอาหารกลางวัน</h3></div>
+          <div className="card-body">
+            <div className="row">
+              <div className="col-6 col-md-3 form-group"><label>งบ/หัว (บาท)</label><input type="number" className="form-control" value={form.budgetPerHead} onChange={e=>set('budgetPerHead',e.target.value)} min="0" step="0.01"/></div>
+              <div className="col-6 col-md-3 form-group"><label>จำนวน นร. (คน)</label><input type="number" className="form-control" value={form.totalStudents} onChange={e=>set('totalStudents',e.target.value)} min="0"/></div>
+              <div className="col-6 col-md-3 form-group"><label>เงินจัดสรร (บาท)</label><input type="number" className="form-control" value={form.totalBudgetReceived} onChange={e=>set('totalBudgetReceived',e.target.value)} onBlur={e=>{if(e.target.value!==prevBudget)handleBudgetChange(e.target.value)}} min="0" step="0.01"/></div>
+              <div className="col-6 col-md-3 form-group"><label>วันที่ได้รับเงิน</label><ThaiDatePicker value={form.budgetReceivedDate} onChange={v=>set('budgetReceivedDate',v)}/></div>
+            </div>
+            <div className="callout callout-info py-2 px-3">
+              <small className="text-muted d-block mb-1"><i className="fas fa-calculator mr-1"/>ผลการคำนวณอัตโนมัติ</small>
+              <div className="row text-center" style={{fontSize:'.85rem'}}>
+                <div className="col-3"><strong>{fmtNum(costPerDay)}</strong><br/><small className="text-muted">บาท/วัน</small></div>
+                <div className="col-3"><strong className="text-primary">{totalDays}</strong><br/><small className="text-muted">จัดได้ (วัน)</small></div>
+                <div className="col-3"><strong className="text-success">{fmtNum(remainingBudget)}</strong><br/><small className="text-muted">งบคงเหลือ</small></div>
+                <div className="col-3"><strong className="text-warning">{remainingDays}</strong><br/><small className="text-muted">เหลืออีก (วัน)</small></div>
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-            <div><div className="text-[var(--md-text2)] text-xs">ค่าใช้จ่าย/วัน</div><div className="font-semibold">{fmtNum(costPerDay)} บาท</div></div>
-            <div><div className="text-[var(--md-text2)] text-xs">จัดอาหารได้</div><div className="font-semibold text-[var(--md-primary)]">{totalDays} วัน</div></div>
-            <div><div className="text-[var(--md-text2)] text-xs">งบที่เหลือ</div><div className="font-semibold text-green-700">{fmtNum(remainingBudget)} บาท</div></div>
-            <div><div className="text-[var(--md-text2)] text-xs">จัดได้อีก</div><div className="font-semibold text-orange-600">{remainingDays} วัน</div></div>
+        </div>
+
+        {/* LINE */}
+        <div className="card card-outline card-warning">
+          <div className="card-header"><h3 className="card-title"><i className="fab fa-line mr-2" style={{color:'#06c755'}}/>LINE Messaging API</h3></div>
+          <div className="card-body">
+            <div className="row">
+              <div className="col-md-6 form-group"><label>Channel Access Token</label><input type="password" className="form-control" value={form.lineChannelToken} onChange={e=>set('lineChannelToken',e.target.value)} placeholder="Channel Access Token"/><small className="text-muted">จาก <a href="https://developers.line.biz/" target="_blank">LINE Developers Console</a></small></div>
+              <div className="col-md-6 form-group"><label>Group ID</label><input className="form-control" value={form.lineGroupId} onChange={e=>set('lineGroupId',e.target.value)} placeholder="Group ID ของกลุ่ม LINE"/><small className="text-muted">เชิญ Bot เข้ากลุ่มแล้วดึง Group ID</small></div>
+            </div>
+            <button type="button" className="btn btn-sm" style={{background:'#06c755',color:'#fff'}} onClick={handleTestLine}><i className="fab fa-line mr-1"/>ทดสอบส่ง LINE</button>
           </div>
         </div>
       </div>
 
-      {/* LINE */}
-      <div className={cardCls}>
-        <div className={titleCls}>
-          <span style={{ color: '#06c755', fontSize: 18 }}>💬</span> LINE Messaging API
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-          <div>
-            <label className={labelCls}>Channel Access Token</label>
-            <input type="password" className={inputCls} value={form.lineChannelToken} onChange={e => set('lineChannelToken', e.target.value)} placeholder="ใส่ Channel Access Token" />
-            <div className="text-xs text-[var(--md-text2)] mt-1">จาก <a href="https://developers.line.biz/" target="_blank" className="text-[var(--md-primary)]">LINE Developers Console</a> → Messaging API</div>
-          </div>
-          <div>
-            <label className={labelCls}>Group ID (กลุ่มที่จะส่ง)</label>
-            <input className={inputCls} value={form.lineGroupId} onChange={e => set('lineGroupId', e.target.value)} placeholder="ใส่ Group ID ของกลุ่ม LINE" />
-            <div className="text-xs text-[var(--md-text2)] mt-1">เชิญ Bot เข้ากลุ่มแล้วดึง Group ID จาก Webhook event</div>
+      {/* Right sidebar - save button */}
+      <div className="col-lg-4">
+        <div className="card card-primary">
+          <div className="card-header"><h3 className="card-title"><i className="fas fa-save mr-2"/>บันทึก</h3></div>
+          <div className="card-body">
+            <p className="text-muted" style={{fontSize:'.85rem'}}>กดปุ่มด้านล่างเพื่อบันทึกการตั้งค่าทั้งหมด</p>
+            <button className="btn btn-primary btn-block btn-lg" onClick={handleSave} disabled={saving}>
+              <i className={`fas fa-${saving?'spinner fa-spin':'save'} mr-2`}/>{saving?'กำลังบันทึก...':'บันทึกการตั้งค่า'}
+            </button>
           </div>
         </div>
-        <button type="button" onClick={handleTestLine}
-          className="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors flex items-center gap-2"
-          style={{ background: '#06c755' }}>
-          📤 ทดสอบส่ง LINE
-        </button>
-      </div>
-
-      {/* Save */}
-      <div className="text-right">
-        <button onClick={handleSave} disabled={saving}
-          className="px-6 py-2 bg-[var(--md-primary)] text-white font-medium rounded-lg hover:bg-[var(--md-primary-dark)] transition-colors disabled:opacity-60 flex items-center gap-2 ml-auto">
-          <Save size={16} /> {saving ? 'กำลังบันทึก...' : 'บันทึกการตั้งค่า'}
-        </button>
       </div>
     </div>
   );
