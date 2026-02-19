@@ -1,0 +1,7 @@
+# Pass Authorization header to PHP
+RewriteEngine On
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
+# Allow PHP to read Authorization header
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
