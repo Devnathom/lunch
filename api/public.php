@@ -61,7 +61,7 @@ function getSchoolReports() {
     $sid = intval($_GET['school_id'] ?? 0);
     if (!$sid) jsonResponse([]);
     $db = getDB();
-    $stmt = $db->prepare("SELECT lr.*, s.name as school_name, s.logo_url FROM lunch_reports lr JOIN schools s ON lr.school_id = s.id WHERE lr.school_id = ? ORDER BY lr.date DESC LIMIT 30");
+    $stmt = $db->prepare("SELECT lr.*, s.name as school_name, s.logo_url FROM lunch_reports lr LEFT JOIN schools s ON lr.school_id = s.id WHERE lr.school_id = ? ORDER BY lr.date DESC LIMIT 30");
     $stmt->execute([$sid]);
     jsonResponse($stmt->fetchAll());
 }
@@ -71,7 +71,7 @@ function getLatestReports() {
     $limit = min(intval($_GET['limit'] ?? 20), 50);
     $stmt = $db->prepare("SELECT lr.*, s.name as school_name, s.logo_url, p.name as province_name, d.name as district_name
         FROM lunch_reports lr
-        JOIN schools s ON lr.school_id = s.id
+        LEFT JOIN schools s ON lr.school_id = s.id
         LEFT JOIN provinces p ON s.province_id = p.id
         LEFT JOIN districts d ON s.district_id = d.id
         ORDER BY lr.date DESC, lr.id DESC LIMIT ?");
