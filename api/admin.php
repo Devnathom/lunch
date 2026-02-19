@@ -100,9 +100,21 @@ function addSchool() {
     $d = jsonInput();
     $db = getDB();
 
+    // Auto find/create district
+    $districtId = intval($d['district_id'] ?? 0);
+    if (!$districtId && !empty($d['district_name']) && !empty($d['province_id'])) {
+        $pid = intval($d['province_id']);
+        $dname = trim($d['district_name']);
+        $stmt2 = $db->prepare("SELECT id FROM districts WHERE province_id = ? AND name = ?");
+        $stmt2->execute([$pid, $dname]);
+        $row = $stmt2->fetch();
+        if ($row) { $districtId = $row['id']; }
+        else { $db->prepare("INSERT INTO districts (province_id, name) VALUES (?, ?)")->execute([$pid, $dname]); $districtId = $db->lastInsertId(); }
+    }
+
     $stmt = $db->prepare("INSERT INTO schools (province_id, district_id, name, address, phone, affiliation, director_name, director_position, budget_per_head, total_students) VALUES (?,?,?,?,?,?,?,?,?,?)");
     $stmt->execute([
-        intval($d['province_id']), intval($d['district_id']),
+        intval($d['province_id']), $districtId,
         $d['name'] ?? '', $d['address'] ?? '', $d['phone'] ?? '',
         $d['affiliation'] ?? '', $d['director_name'] ?? '', $d['director_position'] ?? '',
         floatval($d['budget_per_head'] ?? 21), intval($d['total_students'] ?? 0)

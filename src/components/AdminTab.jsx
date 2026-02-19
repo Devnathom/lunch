@@ -55,6 +55,14 @@ export default function AdminTab() {
       .then(async r => { if (!r.isConfirmed) return; const res = await api.delete(`/admin.php?action=districts&id=${d.id}`); if (res.data.success) { Toast.fire({ icon: 'success', title: res.data.message }); loadDistricts(); } else Swal.fire('ผิดพลาด', res.data.message, 'error'); });
   };
 
+  // --- Load districts from thai_address API ---
+  const loadDistrictsForProvince = async (pid) => {
+    try {
+      const r = await api.get(`/thai_address.php?action=districts&province_id=${pid}`);
+      return Array.isArray(r.data) ? r.data : [];
+    } catch { return []; }
+  };
+
   // --- Add School ---
   const addSchool = async () => {
     const provOpts = provinces.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
@@ -62,36 +70,60 @@ export default function AdminTab() {
       title: 'เพิ่มโรงเรียน', width: 600, confirmButtonText: 'เพิ่ม', showCancelButton: true, cancelButtonText: 'ยกเลิก',
       html: `<div style="text-align:left;font-size:.9rem">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div><label class="small text-muted">จังหวัด</label><select id="s-prov" class="swal2-select" style="width:100%" onchange="fetch('/api/admin.php?action=districts&province_id='+this.value,{headers:{'Authorization':'Bearer ${localStorage.getItem('auth_token')}'}}).then(r=>r.json()).then(d=>{let s=document.getElementById('s-dist');s.innerHTML='<option>-- เลือก --</option>'+d.map(x=>'<option value='+x.id+'>'+x.name+'</option>').join('')})">${provOpts}</select></div>
-          <div><label class="small text-muted">อำเภอ</label><select id="s-dist" class="swal2-select" style="width:100%"><option>-- เลือกจังหวัดก่อน --</option></select></div>
+          <div><label class="small text-muted">จังหวัด</label><select id="s-prov" class="swal2-select" style="width:100%"><option value="">-- เลือกจังหวัด --</option>${provOpts}</select></div>
+          <div><label class="small text-muted">อำเภอ</label><input id="s-dist-name" class="swal2-input" list="dist-list" placeholder="พิมพ์หรือเลือกอำเภอ..." style="margin:0;width:100%"><datalist id="dist-list"></datalist></div>
         </div>
         <div style="margin-bottom:8px"><label class="small text-muted">ชื่อโรงเรียน</label><input id="s-name" class="swal2-input" placeholder="โรงเรียน..." style="margin:0;width:100%"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
           <div><label class="small text-muted">ผู้อำนวยการ</label><input id="s-dir" class="swal2-input" placeholder="ชื่อ-นามสกุล" style="margin:0;width:100%"></div>
           <div><label class="small text-muted">ตำแหน่ง</label><input id="s-pos" class="swal2-input" placeholder="ผอ." style="margin:0;width:100%"></div>
         </div>
+        <div style="margin-bottom:8px"><label class="small text-muted">สังกัด</label><input id="s-aff" class="swal2-input" placeholder="เช่น สพป.เชียงใหม่ เขต 1" style="margin:0;width:100%"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
           <div><label class="small text-muted">งบ/หัว (บาท)</label><input id="s-bph" type="number" class="swal2-input" value="21" style="margin:0;width:100%"></div>
           <div><label class="small text-muted">จำนวน นร.</label><input id="s-stu" type="number" class="swal2-input" value="0" style="margin:0;width:100%"></div>
         </div>
-        <hr><p class="fw-bold" style="margin:8px 0 4px">บัญชีเข้าสู่ระบบ</p>
+        <hr><p style="font-weight:600;margin:8px 0 4px">🔑 บัญชีเข้าสู่ระบบ</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <div><label class="small text-muted">ชื่อผู้ใช้</label><input id="s-user" class="swal2-input" placeholder="username" style="margin:0;width:100%"></div>
           <div><label class="small text-muted">รหัสผ่าน</label><input id="s-pass" class="swal2-input" placeholder="อย่างน้อย 6 ตัว" style="margin:0;width:100%"></div>
         </div>
       </div>`,
-      preConfirm: () => ({
-        province_id: document.getElementById('s-prov').value, district_id: document.getElementById('s-dist').value,
-        name: document.getElementById('s-name').value, director_name: document.getElementById('s-dir').value,
-        director_position: document.getElementById('s-pos').value, budget_per_head: document.getElementById('s-bph').value,
-        total_students: document.getElementById('s-stu').value, username: document.getElementById('s-user').value,
-        password: document.getElementById('s-pass').value
-      })
+      didOpen: () => {
+        const provSel = document.getElementById('s-prov');
+        provSel.addEventListener('change', async () => {
+          const pid = provSel.value;
+          const dl = document.getElementById('dist-list');
+          const inp = document.getElementById('s-dist-name');
+          dl.innerHTML = ''; inp.value = '';
+          if (!pid) return;
+          const dists = await loadDistrictsForProvince(pid);
+          dl.innerHTML = dists.map(d => `<option value="${d.name}">`).join('');
+        });
+      },
+      preConfirm: () => {
+        const name = document.getElementById('s-name').value;
+        const prov = document.getElementById('s-prov').value;
+        const dist = document.getElementById('s-dist-name').value.trim();
+        if (!name) { Swal.showValidationMessage('กรุณากรอกชื่อโรงเรียน'); return false; }
+        if (!prov) { Swal.showValidationMessage('กรุณาเลือกจังหวัด'); return false; }
+        if (!dist) { Swal.showValidationMessage('กรุณากรอกอำเภอ'); return false; }
+        return {
+          province_id: prov, district_name: dist,
+          name, director_name: document.getElementById('s-dir').value,
+          director_position: document.getElementById('s-pos').value,
+          affiliation: document.getElementById('s-aff').value,
+          budget_per_head: document.getElementById('s-bph').value,
+          total_students: document.getElementById('s-stu').value,
+          username: document.getElementById('s-user').value,
+          password: document.getElementById('s-pass').value
+        };
+      }
     });
-    if (!fv || !fv.name) return;
+    if (!fv) return;
     try {
       const r = await api.post('/admin.php?action=schools', fv);
-      if (r.data.success) { Toast.fire({ icon: 'success', title: r.data.message }); loadSchools(); }
+      if (r.data.success) { Toast.fire({ icon: 'success', title: r.data.message }); loadSchools(); loadDistricts(); }
       else Swal.fire('ผิดพลาด', r.data.message, 'error');
     } catch (e) { Swal.fire('ผิดพลาด', e.message, 'error'); }
   };
